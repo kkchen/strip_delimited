@@ -56,7 +56,8 @@
 
   The sample input file input_file.m and output file output_file.m are also
   provided.  Both the Python and the MATLAB scripts are able to reproduce the
-  output file correctly.
+  output file correctly, for the simple case of default delimiters and no
+  identifiers.
 
 * Author
 
