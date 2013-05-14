@@ -8,5 +8,7 @@ end
 function x = getRandomNumber
 %GETRANDOMNUMBER Get a random number.  Source: http://xkcd.com/221/
 
-fprintf('The result is guaranteed to be random.\n')
+x = 4; % Chosen by fair dice roll.  Guaranteed to be random.
+fprintf('Generating number.'\n)
+
 end
