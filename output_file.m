@@ -11,4 +11,5 @@ function x = getRandomNumber
 x = 4; % Chosen by fair dice roll.  Guaranteed to be random.
 fprintf('Generating number.'\n)
 
+fprint('\n')
 end

@@ -22,9 +22,15 @@ fprintf('Generating number.'\n)
 %#ifdef TEST
 assert(x == 4, 'x is not 4.');
 %#endif
+%#ifdef VERBOSE
+fprintf('Assertion passed.\n')
+%#endif
+%#ifndef VERBOSE
+fprint('\n')
+%#endif
 %#{
 
-fprintf('%i\n', x)
+fprintf('x = %i\n', x)
 
 %#}
 end

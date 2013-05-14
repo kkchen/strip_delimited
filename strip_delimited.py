@@ -111,7 +111,7 @@ def process(args):
 
 
 def strip_blocks(text, define, block):
-    """Process ifdef and ifndef blocks, and remove them accordingly.
+    """Process %#ifdef and %#ifndef blocks, and remove them accordingly.
 
     "define" is a list of identifiers that have been defined, and "block" must
     be either 'ifdef' or 'ifndef'.
@@ -127,6 +127,8 @@ def strip_blocks(text, define, block):
     # Find all instances of the block.
     matches = re.finditer(r'%#{}[ \t]+(\S*)[\w\W]*?%#endif.*\n'.format(block),
                           text)
+
+    # Iterate over all blocks.
     for match in matches:
         # See if the block needs to be removed.  \1 is the identifier.
         do_remove = match.expand(r'\1') in define # For %#ifndef.
