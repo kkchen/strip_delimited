@@ -4,6 +4,20 @@
   default delimiters are '%#{' and '%#}', but custom delimiters may be used as
   well.
 
+  In addition, it removes text between C-macro-like
+
+      %#ifdef IDENTIFIER
+      ...
+      %#endif
+
+  and
+
+      %#ifndef IDENTIFIER
+      ...
+      %#endif
+
+  blocks, for given identifiers.  This behaves similarly to the C preprocessor.
+
 * Python script
 
   strip_delimited.py is a Python version of the utility.
@@ -19,10 +33,10 @@
   (or "python3", or whatever your Python 3.2+ interpreter is).
 
   Alternatively, make sure strip_delimited.py has execution privileges, and
-  place it in a directory in the $PATH environment variable.  Then access the
-  instructions with
+  place it in a directory in the $PATH environment variable.  Then the script
+  can be run with
 
-      $ strip_delimited.py -h
+      $ strip_delimited.py [options]
 
    Note that this method assumes that your Python 3.2+ interpreter is called
    "python3".  This can be changed in the first line of strip_delimited.py.
