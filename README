@@ -1,4 +1,4 @@
-* Overview
+Overview
 
   strip_delimited is a utility that removes text between delimiters.  The
   default delimiters are '%#{' and '%#}', but custom delimiters may be used as
@@ -18,7 +18,7 @@
 
   blocks, for given identifiers.  This behaves similarly to the C preprocessor.
 
-* Python script
+Python script
 
   strip_delimited.py is a Python version of the utility.
 
@@ -41,7 +41,7 @@
    Note that this method assumes that your Python 3.2+ interpreter is called
    "python3".  This can be changed in the first line of strip_delimited.py.
 
-* MATLAB script
+MATLAB script
 
   strip_delimited.m is a MATLAB version of the utility.  Users should be
   forewarned, however, that this MATLAB version is a little more kludgy because
@@ -52,14 +52,14 @@
 
       >> help strip_delimited.m
 
-* Example
+Example
 
   The sample input file input_file.m and output file output_file.m are also
   provided.  Both the Python and the MATLAB scripts are able to reproduce the
   output file correctly, for the simple case of default delimiters and no
   identifiers.
 
-* Author
+Author
 
   This code is maintained by Kevin K. Chen.  Send bug reports and feature
   requests to kkchen@princeton.edu.
