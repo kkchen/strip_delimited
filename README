@@ -1,0 +1,10 @@
+strip_delimited.py is a Python script that removes text between delimiters.
+
+The script requires Python 2.7, which can be obtained from
+http://www.python.org/.  It is not compatible with Python 3.
+
+For more instructions, including usage, run
+
+    $ python strip_delimited.py -h
+
+The sample input file input_file.m is also provided.
