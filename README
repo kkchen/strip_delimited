@@ -59,6 +59,8 @@ Example
   output file correctly, for the simple case of default delimiters and no
   identifiers.
 
+  The sample input file can also be processed the identifiers VERBOSE and TEST.
+
 Author
 
   This code is maintained by Kevin K. Chen.  Send bug reports and feature
