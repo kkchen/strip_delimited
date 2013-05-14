@@ -100,8 +100,8 @@ def process(args):
                   flags=re.S)
 
     # Process the %#ifdef and %#ifndef blocks.
-    text = strip_blocks(text, 'ifdef')
-    text = strip_blocks(text, 'ifndef')
+    text = strip_blocks(text, args.define, 'ifdef')
+    text = strip_blocks(text, args.define, 'ifndef')
 
     # All blocks to be removed have been removed.  Remove the remaining %# block
     # delimiters.
@@ -110,10 +110,13 @@ def process(args):
     print(text, end='')
 
 
-def strip_blocks(text, block):
+def strip_blocks(text, define, block):
     """Process ifdef and ifndef blocks, and remove them accordingly.
 
-    Return the processed text.
+    "define" is a list of identifiers that have been defined, and "block" must
+    be either 'ifdef' or 'ifndef'.
+
+    Returns the processed text.
 
     """
 
@@ -126,7 +129,7 @@ def strip_blocks(text, block):
                           text)
     for match in matches:
         # See if the block needs to be removed.  \1 is the identifier.
-        do_remove = match.expand(r'\1') in args.define # For %#ifndef.
+        do_remove = match.expand(r'\1') in define # For %#ifndef.
         if block == 'ifdef':
             do_remove = not do_remove
 
