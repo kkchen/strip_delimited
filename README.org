@@ -18,9 +18,18 @@
 
   (or "python3", or whatever your Python 3.2+ interpreter is).
 
+  Alternatively, make sure strip_delimited.py has execution privileges, and
+  place it in a directory in the $PATH environment variable.  Then access the
+  instructions with
+
+      $ strip_delimited.py -h
+
+   Note that this method assumes that your Python 3.2+ interpreter is called
+   "python3".  This can be changed in the first line of strip_delimited.py.
+
 * MATLAB script
 
-  strip_delimited.m is a MATLAB version of the utility.  The user should be
+  strip_delimited.m is a MATLAB version of the utility.  Users should be
   forewarned, however, that this MATLAB version is a little more kludgy because
   of the need to escape certain characters when writing to a file with fprintf.
   Therefore, there is a small possibility that it may be buggy.
@@ -34,3 +43,8 @@
   The sample input file input_file.m and output file output_file.m are also
   provided.  Both the Python and the MATLAB scripts are able to reproduce the
   output file correctly.
+
+* Author
+
+  This code is maintained by Kevin K. Chen.  Send bug reports and feature
+  requests to kkchen@princeton.edu.
