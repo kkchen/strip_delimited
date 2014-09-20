@@ -22,10 +22,8 @@
 
   blocks, for given identifiers.  This behaves similarly to the C preprocessor.
 
-  Users should be forewarned, however, that the software is a little kludgy
-  because of the need to escape certain characters when writing to a file with
-  fprintf.  Even besides this, there is a small but real possibility that the
-  software may be buggy.
+  Users should be forewarned, however, that there is a small but real
+  possibility that the software may be buggy.  Proceed at your own risk!
 
   For more instructions, including usage, run
 
