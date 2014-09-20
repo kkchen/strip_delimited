@@ -114,6 +114,7 @@ function process(args)
 file_in = fopen(args.input_file, 'rt');
 text = fread(file_in, '*char')';
 fclose(file_in);
+clear file_in
 
 % Strip the text between delimiters.
 text = regexprep(text, ...
@@ -132,8 +133,8 @@ tokens = []; % Array, where tokens[depth] is the token at the given depth.
 % false if it is a %#ifndef.
 defined = [];
 
-file_in = fopen(args.output_file, 'rt');
-line = fgets(file_in); % Read the first line.
+file_out = fopen(args.output_file, 'rt');
+line = fgets(file_out); % Read the first line.
 
 while ischar(line)
     keep = true; % Whether the current line should be kept.
@@ -176,10 +177,10 @@ while ischar(line)
     if keep
         text = [text, line]; %#ok<AGROW> % Add this line to the output.
     end
-    line = fgets(file_in); % Read the next line.
+    line = fgets(file_out); % Read the next line.
 end
 
-fclose(file_in);
+fclose(file_out);
 write(text, args.output_file);
 end
 

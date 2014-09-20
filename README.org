@@ -8,7 +8,7 @@
 
 #+BEGIN_SRC MATLAB
       %#ifdef IDENTIFIER
-      % ...
+      ...
       %#endif
 #+END_SRC
 
@@ -16,7 +16,7 @@
 
 #+BEGIN_SRC MATLAB
       %#ifndef IDENTIFIER
-      % ...
+      ...
       %#endif
 #+END_SRC
 
