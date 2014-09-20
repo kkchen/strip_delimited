@@ -6,15 +6,19 @@
 
   In addition, it removes text between C-macro-like
 
+#+BEGIN_SRC MATLAB
       %#ifdef IDENTIFIER
-      ...
+      % ...
       %#endif
+#+END_SRC
 
   and
 
+#+BEGIN_SRC MATLAB
       %#ifndef IDENTIFIER
-      ...
+      % ...
       %#endif
+#+END_SRC
 
   blocks, for given identifiers.  This behaves similarly to the C preprocessor.
 
