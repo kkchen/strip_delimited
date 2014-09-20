@@ -5,7 +5,7 @@ function input_file
 fprintf('Picking random number.\n')
 %#}
 x = getRandomNumber;
-fprintf('The number chosen is ''%i.''\n', x)
+fprintf('The number chosen is %i.\n', x)
 end
 
 function x = getRandomNumber
@@ -16,7 +16,7 @@ x = 4; % Chosen by fair dice roll.  Guaranteed to be random.
 fprintf('Generating number.  The result is guaranteed to be random.\n')
 %#endif
 %#ifndef VERBOSE
-fprintf('Generating number.'\n)
+fprintf('Generating number.\n')
 %#endif
 
 %#ifdef TEST
@@ -26,11 +26,36 @@ assert(x == 4, 'x is not 4.');
 fprintf('Assertion passed.\n')
 %#endif
 %#ifndef VERBOSE
-fprint('\n')
+fprintf('\n')
 %#endif
 %#{
 
 fprintf('x = %i\n', x)
 
 %#}
+
+%#ifdef OUTER
+%#ifdef INNER
+fprintf('OUTER and INNER.\n')
+%#endif
+%#endif
+
+%#ifndef OUTER
+%#ifdef INNER
+fprintf('INNER only.\n')
+%#endif
+%#endif
+
+%#ifdef OUTER
+%#ifndef INNER
+fprintf('OUTER only.\n')
+%#endif
+%#endif
+
+%#ifndef OUTER
+%#ifndef INNER
+fprintf('Neither OUTER nor INNER.\n')
+%#endif
+%#endif
+
 end

@@ -35,7 +35,15 @@ function strip_delimited(varargin)
 %   blocks will be preserved (except for the %# lines).
 %
 %   Multiple identifiers can be provided.  These special comments should also
-%   appear in their own lines.
+%   appear in their own lines.  Furthermore, nested blocks, such as
+%
+%      %#ifdef OUTER
+%      %#ifndef INNER
+%          ...
+%      %#endif
+%      %#endif
+%
+%   are allowed.
 %
 %   STRIP_DELIMITED(..., 'delim_open', DELIM_OPEN, 'delim_close', DELIM_CLOSE)
 %   uses custom delimiters DELIM_OPEN and DELIM_CLOSE.  Note that in DELIM_OPEN
@@ -58,7 +66,7 @@ function strip_delimited(varargin)
 %      strip_delimited('input_file.m', 'output_file.m', {'VERBOSE', 'TEST'});
 %
 %   Kevin K. Chen
-%   May 14, 2013
+%   September 20, 2014
 
 args = parse(varargin{:});
 process(args);
@@ -83,8 +91,7 @@ p.addRequired('output_file', ...
     @(f) validateattributes(f, {'char'}, {'row', 'nonempty'}, func, ...
     'OUTPUT_FILE', 2))
 p.addOptional('identifiers', {}, ...
-    @(id) validateattributes(id, {'cell'}, {'nonempty'}, func, 'IDENTIFIER', ...
-    3))
+    @(id) validateattributes(id, {'cell'}, {}, func, 'IDENTIFIER', 3))
 p.addParamValue('delim_open', '%#{', ...
     @(d) validateattributes(d, {'char'}, {'row', 'nonempty'}, func, ...
     'DELIM_OPEN'))
@@ -101,6 +108,8 @@ function process(args)
 %   PROCESS(ARGS) takes in the input argument struct ARGS from PARSE and does
 %   the text editing.
 
+%% Strip the text between delimiters.
+
 % Read in the text.
 file_in = fopen(args.input_file, 'rt');
 text = fread(file_in, '*char')';
@@ -110,60 +119,85 @@ fclose(file_in);
 text = regexprep(text, ...
     [args.delim_open, '.*?', args.delim_close, '\s?'], '', 'dotall');
 
-% Process the %#ifdef and %#ifndef blocks.
-text = strip_blocks(text, args.identifiers, 'ifdef');
-text = strip_blocks(text, args.identifiers, 'ifndef');
+% Write the result to file.
+write(text, args.output_file);
 
-% All blocks to be removed have been removed.  Remove the remaining %# block
-% delimiters.
-text = regexprep(text, '%#(if(n|)def|endif).*\n', '', 'dotexceptnewline');
+%% Process the %#ifdef and %#ifndef blocks.
+
+% Scan the file line by line to process the %#ifdef and %#ifndef blocks.
+text = [];
+depth = 0; % How many levels in nested %#ifdef and %#ifndef we are in.
+tokens = []; % Array, where tokens[depth] is the token at the given depth.
+% Boolean array, where defined[depth] is true if tokens[depth] is a %#ifdef;
+% false if it is a %#ifndef.
+defined = [];
+
+file_in = fopen(args.output_file, 'rt');
+line = fgets(file_in); % Read the first line.
+
+while ischar(line)
+    keep = true; % Whether the current line should be kept.
+    
+    % Increase the nesting depth at the start of a block.
+    if ~isempty(regexp(line, '%#if(n|)def', 'once'))
+        keep = false;
+        depth = depth + 1;
+        
+        % Get the token name.
+        match = regexp(line, '%#if(n|)def\s*(\w+)', 'tokens', 'once');
+        tokens{depth} = match{2}; %#ok<AGROW>
+        % Mark whether this is a %#ifdef or %#ifndef test.
+        defined(depth) = isempty(regexp(line, '%#ifndef', 'once')); %#ok<AGROW>
+    end
+
+    % Decrease the nesting depth if necessary.
+    if ~isempty(regexp(line, '%#endif', 'once'))
+        keep = false;
+        
+        % This depth no longer exists; get rid of it.
+        tokens(depth) = []; %#ok<AGROW>
+        defined(depth) = []; %#ok<AGROW>
+        
+        depth = depth - 1;
+        if depth < 0
+            throw(MException('strip_delimited:endif', ...
+                'Extra %%#endif detected.'))
+        end
+    end
+    
+    % Check this block and its parents to see if this line should be killed.
+    for d = 1:depth
+        if xor(defined(d), any(strcmp(tokens{d}, args.identifiers)))
+            keep = false;
+            break
+        end
+    end
+    
+    if keep
+        text = [text, line]; %#ok<AGROW> % Add this line to the output.
+    end
+    line = fgets(file_in); % Read the next line.
+end
+
+fclose(file_in);
+write(text, args.output_file);
+end
+
+function write(text, output_file)
+%WRITE Write text to file.
+%   WRITE(TEXT, OUTPUT_FILE) writes the contents of TEXT to the file
+%   OUTPUT_FILE.
 
 % Because we will use fprintf to print the resulting text, we need to escape the
 % percent (%) and backslash (\) characters.
 text = regexprep(text, '%', '%%');
 text = regexprep(text, '\\', '\\\\');
 
-% Write the result to file.
-file_out = fopen(args.output_file, 'wt');
+file_out = fopen(output_file, 'wt');
 if file_out == -1
     throw(MException('strip_delimited:process:fopen', ...
-        'File %s failed to open.', args.output_file));
+        'File %s failed to open.', output_file));
 end
 fprintf(file_out, text);
 fclose(file_out);
-end
-
-function text = strip_blocks(text, identifiers, block)
-%STRIP_BLOCKS Profess %#ifdef and %#ifndef blocks, and remove them accordingly.
-%   TEXT = STRIP_BLOCKS(TEXT, IDENTIFIERS, BLOCK) scans TEXT for %#ifdef and
-%   %#ifndef blocks.  These blocks are conditionally removed, depending on
-%   whether an %#ifdef or %#ifndef identifier is in the cell array IDENTIFIERS.
-%   BLOCK is one of 'ifdef' and 'ifndef', and specifies the type of block to
-%   check.  The text is returned as TEXT.
-
-if ~any(strcmp(block, {'ifdef', 'ifndef'}))
-    throw(MException('strip_delimited:strip_blocks:block', ...
-        'block is ''%s'' but must be ''ifdef'' or ''ifndef''.', block))
-end
-
-offset = 0; % text index offset as blocks get removed.
-% Find all instances of the block.
-[matchstart, matchend, ~, ~, tokenstring] = ...
-    regexp(text, ['%#', block ,'[ \t]+(\S*)[\w\W]*?%#endif.*\n'], ...
-    'dotexceptnewline');
-
-% Iterate over all blocks.
-for j = 1:numel(matchstart)
-    do_remove = any(strcmp(tokenstring{j}, identifiers)); % For %#ifndef.
-    if strcmp(block, 'ifdef')
-        do_remove = ~do_remove;
-    end
-
-    if do_remove
-        % The identifier wasn't provided by the user.  Remove the block.
-        text(matchstart(j)-offset:matchend(j)-offset) = [];
-        % Increase the offset by the size of this block.
-        offset = offset + matchend(j) - matchstart(j) + 1;
-    end
-end
 end

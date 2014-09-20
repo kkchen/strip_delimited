@@ -1,0 +1,42 @@
+* Overview
+
+  strip_delimited.m is a utility that removes text between delimiters.  The
+  default delimiters are '%#{' and '%#}', but custom delimiters may be used as
+  well.
+
+  In addition, it removes text between C-macro-like
+
+      %#ifdef IDENTIFIER
+      ...
+      %#endif
+
+  and
+
+      %#ifndef IDENTIFIER
+      ...
+      %#endif
+
+  blocks, for given identifiers.  This behaves similarly to the C preprocessor.
+
+  Users should be forewarned, however, that the software is a little kludgy
+  because of the need to escape certain characters when writing to a file with
+  fprintf.  Even besides this, there is a small but real possibility that the
+  software may be buggy.
+
+  For more instructions, including usage, run
+
+      >> help strip_delimited
+
+* Example
+
+  The sample input file input_file.m and output file output_file.m are also
+  provided.  The MATLAB script is able to reproduce the output file correctly,
+  for the simple case of default delimiters and no identifiers.
+
+  The sample input file can also be processed the identifiers VERBOSE, TEST,
+  INNER, and OUTER.
+
+* Author
+
+  This code is maintained by Kevin K. Chen.  Send bug reports and feature
+  requests to kvn.k.chen@gmail.com.
