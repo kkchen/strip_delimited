@@ -27,7 +27,9 @@
 
   For more instructions, including usage, run
 
-      >> help strip_delimited
+#+BEGIN_SRC MATLAB
+      help strip_delimited
+#+END_SRC
 
 * Example
 
