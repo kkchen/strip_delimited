@@ -139,9 +139,9 @@ line = fgets(file_out); % Read the first line.
 while ischar(line)
     keep = true; % Whether the current line should be kept.
     
-    % Increase the nesting depth at the start of a block.
-    if ~isempty(regexp(line, '%#if(n|)def', 'once'))
+    if ~isempty(regexp(line, '%#if(n|)def', 'once')) % Block begin.
         keep = false;
+        % Increase the nesting depth at the start of a block.
         depth = depth + 1;
         
         % Get the token name.
@@ -149,31 +149,29 @@ while ischar(line)
         tokens{depth} = match{2}; %#ok<AGROW>
         % Mark whether this is a %#ifdef or %#ifndef test.
         defined(depth) = isempty(regexp(line, '%#ifndef', 'once')); %#ok<AGROW>
-    end
-
-    % Decrease the nesting depth if necessary.
-    if ~isempty(regexp(line, '%#endif', 'once'))
+    elseif ~isempty(regexp(line, '%#endif', 'once')) % Block end.
         keep = false;
         
         % This depth no longer exists; get rid of it.
         tokens(depth) = []; %#ok<AGROW>
         defined(depth) = []; %#ok<AGROW>
         
+        % Decrease the nesting depth.
         depth = depth - 1;
         if depth < 0
             throw(MException('strip_delimited:endif', ...
                 'Extra %%#endif detected.'))
         end
-    end
-    
-    % Check this block and its parents to see if this line should be killed.
-    for d = 1:depth
-        if xor(defined(d), any(strcmp(tokens{d}, args.identifiers)))
-            keep = false;
-            break
+    else % All lines that are not %#....
+        % Check this block and its parents to see if this line should be killed.
+        for d = 1:depth
+            if xor(defined(d), any(strcmp(tokens{d}, args.identifiers)))
+                keep = false;
+                break
+            end
         end
     end
-    
+
     if keep
         text = [text, line]; %#ok<AGROW> % Add this line to the output.
     end
