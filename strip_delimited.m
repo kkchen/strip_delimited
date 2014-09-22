@@ -152,10 +152,6 @@ while ischar(line)
     elseif ~isempty(regexp(line, '%#endif', 'once')) % Block end.
         keep = false;
         
-        % This depth no longer exists; get rid of it.
-        tokens(depth) = []; %#ok<AGROW>
-        defined(depth) = []; %#ok<AGROW>
-        
         % Decrease the nesting depth.
         depth = depth - 1;
         if depth < 0
