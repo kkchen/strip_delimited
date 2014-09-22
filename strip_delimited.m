@@ -108,54 +108,50 @@ function process(args)
 %   PROCESS(ARGS) takes in the input argument struct ARGS from PARSE and does
 %   the text editing.
 
-%% Strip the text between delimiters.
-
-% Read in the text.
-file_in = fopen(args.input_file, 'rt');
-text = fread(file_in, '*char')';
-fclose(file_in);
-clear file_in
-
-% Strip the text between delimiters.
-text = regexprep(text, ...
-    [args.delim_open, '.*?', args.delim_close, '\s?'], '', 'dotall');
-
-% Write the result to file.
-write(text, args.output_file);
-
 %% Process the %#ifdef and %#ifndef blocks.
 
-% Scan the file line by line to process the %#ifdef and %#ifndef blocks.
-text = [];
+text = ''; % A record of the scanned text.
 depth = 0; % How many levels in nested %#ifdef and %#ifndef we are in.
 tokens = []; % Array, where tokens[depth] is the token at the given depth.
 % Boolean array, where defined[depth] is true if tokens[depth] is a %#ifdef;
 % false if it is a %#ifndef.
 defined = [];
 
-file_out = fopen(args.output_file, 'rt');
-line = fgets(file_out); % Read the first line.
+file_in = fopen(args.input_file, 'rt');
+line = fgets(file_in); % Read the first line.
+line_num = 0;
 
+% Scan the file line by line to process the %#ifdef and %#ifndef blocks.
 while ischar(line)
+    line_num = line_num + 1;
     keep = true; % Whether the current line should be kept.
-    
-    if ~isempty(regexp(line, '%#if(n|)def', 'once')) % Block begin.
+
+    if ~isempty(regexp(line, '%#if(n|)def\s+', 'once')) % Block begin.
         keep = false;
         % Increase the nesting depth at the start of a block.
         depth = depth + 1;
-        
+
         % Get the token name.
-        match = regexp(line, '%#if(n|)def\s*(\w+)', 'tokens', 'once');
-        tokens{depth} = match{2}; %#ok<AGROW>
+        match = regexp(line, '%#if(n|)def\s+(\S+)\s*(\S*)', 'tokens', 'once');
+        if isempty(match)
+            throw(MException('strip_delimited:missing_identifier', ...
+                sprintf('Missing identifier in line %d.', line_num)))
+        elseif ~isempty(match{3})
+            throw(MException('strip_delimited:extra_identifier', ...
+                sprintf('Extra non-identifier text in line %d.', line_num)))
+        else
+            tokens{depth} = match{2}; %#ok<AGROW>
+        end
+
         % Mark whether this is a %#ifdef or %#ifndef test.
         defined(depth) = isempty(regexp(line, '%#ifndef', 'once')); %#ok<AGROW>
     elseif ~isempty(regexp(line, '%#endif', 'once')) % Block end.
         keep = false;
-        
+
         % Decrease the nesting depth.
         depth = depth - 1;
         if depth < 0
-            throw(MException('strip_delimited:endif', ...
+            throw(MException('strip_delimited:extra_endif', ...
                 'Extra %%#endif detected.'))
         end
     else % All lines that are not %#....
@@ -171,10 +167,26 @@ while ischar(line)
     if keep
         text = [text, line]; %#ok<AGROW> % Add this line to the output.
     end
-    line = fgets(file_out); % Read the next line.
+
+    line = fgets(file_in); % Read the next line.
 end
 
-fclose(file_out);
+fclose(file_in);
+clear file_in
+
+if depth ~= 0
+    throw(MException('strip_delimited:missing_endif', ...
+        sprintf('%d instances of %%%%#endif missing.', depth)))
+end
+
+%% Strip the text between delimiters.
+
+% Strip the text between delimiters.
+text = regexprep(text, ...
+    [args.delim_open, '.*?', args.delim_close, '\s?'], '', 'dotall');
+
+%% Write the result to file.
+
 write(text, args.output_file);
 end
 
