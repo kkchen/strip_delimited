@@ -118,6 +118,11 @@ tokens = []; % Array, where tokens[depth] is the token at the given depth.
 defined = [];
 
 file_in = fopen(args.input_file, 'rt');
+if file_in == -1
+    throw(MException('strip_delimited:process:fopen', ...
+        'File %s failed to open.', args.input_file));
+end
+
 line = fgets(file_in); % Read the first line.
 line_num = 0;
 
@@ -152,7 +157,7 @@ while ischar(line)
         depth = depth - 1;
         if depth < 0
             throw(MException('strip_delimited:extra_endif', ...
-                'Extra %%#endif detected.'))
+                sprintf('Extra %%%%#endif detected in line %d.', line_num)))
         end
     else % All lines that are not %#....
         % Check this block and its parents to see if this line should be killed.
